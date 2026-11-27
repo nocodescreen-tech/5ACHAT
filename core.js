@@ -1,3 +1,4 @@
+import {validateBusiness} from './business.js';
 export const currencies = ['CDF','USD'];
 export const uid = () => globalThis.crypto.randomUUID();
 export const today = () => new Date().toISOString().slice(0,10);
@@ -28,8 +29,9 @@ export function validate(s){
  const storeIds=new Set(s.stores.map(x=>x.id));
  const validItem=i=>i&&str(i.id)&&str(i.name)&&str(i.qty)&&storeIds.has(i.storeId)&&currencies.includes(i.currency)&&money(i.amount)&&typeof i.done==='boolean';
  const validList=l=>l&&str(l.id)&&str(l.name)&&str(l.date)&&arr(l.items)&&unique(l.items)&&l.items.every(validItem)&&l.budget&&currencies.every(c=>money(l.budget[c]));
- if(!s.lists.every(validList)||!unique(s.lists)||!s.trash.every(validList))throw Error('Listes invalides.');
+ if(!s.lists.every(validList)||!s.trash.every(validList)||!unique([...s.lists,...s.trash]))throw Error('Listes invalides.');
  if(s.activeId!==null&&!s.lists.some(l=>l.id===s.activeId))throw Error('Liste active invalide.');
+ if(s.business!==undefined)validateBusiness(s.business);
  return s;
 }
 export function newList(name,date=today()){return {id:uid(),name,date,items:[],budget:{CDF:null,USD:null}};}
