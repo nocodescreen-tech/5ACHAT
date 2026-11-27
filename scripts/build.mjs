@@ -4,6 +4,7 @@ const files=['index.html','style.css','app.js','core.js','cloud.js','business.js
 await mkdir('www',{recursive:true});
 for(const f of files)await copyFile(f,'www/'+f);
 await mkdir('www/vendor/tesseract/core',{recursive:true});
+await copyFile('node_modules/@zxing/browser/umd/zxing-browser.min.js','www/vendor/zxing-browser.min.js');
 for(const f of ['tesseract.min.js','worker.min.js'])await copyFile('node_modules/tesseract.js/dist/'+f,'www/vendor/tesseract/'+f);
 for(const f of await readdir('node_modules/tesseract.js-core'))if(/^tesseract-core.*\.wasm(?:\.js)?$/.test(f))await copyFile('node_modules/tesseract.js-core/'+f,'www/vendor/tesseract/core/'+f);
 // Branded PNG icons generated locally, no external assets.
