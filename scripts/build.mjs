@@ -1,6 +1,6 @@
 import {mkdir,copyFile,writeFile} from 'node:fs/promises';
 import {deflateSync} from 'node:zlib';
-const files=['index.html','style.css','app.js','core.js','cloud.js','business.js','manifest.webmanifest','icon.svg','sw.js'];
+const files=['index.html','style.css','app.js','core.js','cloud.js','business.js','extras.js','manifest.webmanifest','icon.svg','sw.js'];
 await mkdir('www',{recursive:true});
 for(const f of files)await copyFile(f,'www/'+f);
 // Branded PNG icons generated locally, no external assets.
