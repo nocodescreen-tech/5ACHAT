@@ -72,13 +72,16 @@ declare t text;
 begin
  foreach t in array array['workspaces','workspace_versions','suppliers','purchase_lists','purchase_items','products','price_history','expenses','invoices','payments'] loop
   execute format('alter table public.%I enable row level security',t);
-  execute format('create policy read_own on public.%I for select to authenticated using (owner_id = auth.uid())',t);
-  execute format('revoke all on public.%I from anon, authenticated',t);
+  execute format('create policy read_own on public.%I for select to authenticated using (owner_id = (select auth.uid()))',t);
+  execute format('revoke all on public.%I from public, anon, authenticated',t);
   execute format('grant select on public.%I to authenticated',t);
  end loop;
 end $$;
 -- Only this transaction can write the active synchronized state.
-create function public.save_workspace(expected_revision bigint, new_state jsonb)
+create schema if not exists private;
+revoke all on schema private from public, anon, authenticated;
+grant usage on schema private to authenticated;
+create function private.save_workspace(expected_revision bigint, new_state jsonb)
 returns jsonb language plpgsql security definer set search_path='' as $$
 declare u uuid:=auth.uid(); old_rev bigint; next_rev bigint; l jsonb; i jsonb; s jsonb; is_archived boolean;
 begin
@@ -112,6 +115,9 @@ begin
  delete from public.workspace_versions where owner_id=u and revision<next_rev-49;
  return jsonb_build_object('conflict',false,'revision',next_rev);
 end $$;
-revoke all on function public.save_workspace(bigint,jsonb) from public,anon;
+revoke all on function private.save_workspace(bigint,jsonb) from public,anon,authenticated;
+grant execute on function private.save_workspace(bigint,jsonb) to authenticated;
+create function public.save_workspace(expected_revision bigint,new_state jsonb) returns jsonb language sql security invoker set search_path='' as $$ select private.save_workspace(expected_revision,new_state) $$;
+revoke all on function public.save_workspace(bigint,jsonb) from public,anon,authenticated;
 grant execute on function public.save_workspace(bigint,jsonb) to authenticated;
 commit;
