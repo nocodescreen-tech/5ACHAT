@@ -1,4 +1,4 @@
-# 5ACHAT — V1 alpha
+# 5ACHAT — V1 bêta
 
 Gestion mobile des achats et approvisionnements. Application web hors ligne et enveloppe Android Capacitor. Cette version reste à valider sur Android et sur un vrai projet Supabase avant production.
 
@@ -15,12 +15,12 @@ Ouvrir http://localhost:8080. En production, servir www sur HTTPS. Pour importer
 ## PostgreSQL / Supabase
 1. Créer un projet Supabase privé. Dans SQL Editor, exécuter une seule fois supabase/migrations/001_initial.sql.
 2. Activer l'authentification e-mail/mot de passe et les confirmations e-mail.
-3. Dans 5ACHAT, onglet Sauvegarde, renseigner l'URL de projet et la clé publique publishable/anon. Ne jamais utiliser service_role, mot de passe DB ou clé secrète dans le navigateur ou GitHub.
+3. Dans 5ACHAT, onglet Sauvegarde, utiliser directement le projet 5ACHAT préconfiguré (URL et clé publique publishable). Ne jamais utiliser service_role, mot de passe DB ou clé secrète dans le navigateur ou GitHub.
 4. Créer un compte, confirmer l'adresse et se connecter. Au premier rapprochement, choisir explicitement la copie locale ou distante.
-5. Une fois connecté et rapproché, les changements locaux sont envoyés automatiquement. Les révisions empêchent les écrasements distants concurrents. Les anciennes versions sont consultables dans l'historique de sauvegarde (50 versions). La session est en mémoire : reconnexion après fermeture.
+5. Une fois connecté et rapproché, les changements locaux sont envoyés automatiquement. Les révisions empêchent les écrasements distants concurrents. Les anciennes versions sont consultables dans l'historique de sauvegarde (50 versions). La session est en mémoire par défaut. L’option Rester connecté conserve le jeton de renouvellement localement sur un appareil privé ; il n’est pas chiffré par l’application.
 6. Configurer les backups indépendants du fournisseur selon le plan ; tester leur restauration avant utilisation en production.
 
-Le RPC save_workspace est transactionnel : contrôle de propriétaire via auth.uid(), comparaison de révision, projection relationnelle, historique. RLS lecture par propriétaire, écriture via RPC uniquement. Les tables produits, prix, dépenses, factures et paiements sont réservées aux futurs modules, pas encore connectées à l'interface. Ne pas utiliser ces tables avant l'implémentation de leurs opérations métier. Les 10 tables sont décrites dans la migration.
+Le RPC save_workspace est transactionnel : contrôle de propriétaire via auth.uid(), comparaison de révision, projection relationnelle, historique. RLS lecture par propriétaire, écriture via RPC uniquement. Les modules produits, prix, dépenses, factures et paiements sont intégrés à l'interface Activité. La migration 002_business_projection.sql synchronise les projections relationnelles dans la même transaction que la sauvegarde versionnée et refuse les paiements excessifs. Les 10 tables sont décrites dans la migration.
 
 ## Android
 Le workflow GitHub Actions Android APK prépare le web, installe Capacitor 7, génère un projet Android puis assemble un APK debug et l'enregistre comme artifact 5ACHAT-debug-apk. Le résultat n'est disponible que lorsque le workflow réussit. Pour construire localement : Java 21, SDK Android, Node 22.
@@ -39,3 +39,7 @@ CI JavaScript, workflow PostgreSQL avec auth simulée, workflow APK. Le stockage
 
 ## Design
 Voir design-system/5achat/MASTER.md. Référence publique UI/UX Pro Max consultée ; adaptation manuelle, pas d'exécution de sa CLI ici.
+
+## V1 bêta
+
+Charte 5DEV orange/noir/blanc, monogramme 5/check, thème sombre, catalogue, historique des prix unitaires, comparaison par devise, autres dépenses, factures et paiements partiels, impression PDF via le navigateur et export CSV. Les données sont synchronisées après validation de la migration 002. OCR, scan caméra, notifications push, sauvegarde externe indépendante et import Excel natif restent à développer. Le workflow Android corrige l’installation obsolète du paquet SDK `tools` et applique les ressources de marque. La signature release et les essais sur appareil restent nécessaires.
