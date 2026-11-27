@@ -63,3 +63,33 @@ export function persist(storage,state){
  if(current!==null){try{validate(JSON.parse(current));storage.setItem(KEY+':previous',current);}catch(e){if(e.name==='QuotaExceededError'||e.name==='SecurityError')throw e;}}
  storage.setItem(KEY,JSON.stringify(state));
 }
+
+// Convert an explicitly selected Lovable backup without shipping private seed data.
+// Existing local lists, business records and supplier data are preserved.
+export function importLovableState(current,legacy){
+ validate(current);
+ if(!legacy||legacy.version!==1||legacy.initialized!==true||!Array.isArray(legacy.lists)||!Array.isArray(legacy.trash))throw Error('Sauvegarde Lovable incompatible.');
+ if(legacy.trash.some(x=>x.kind!=='list'))throw Error('Restaurez d’abord les articles et magasins de la corbeille dans Lovable, puis exportez à nouveau.');
+ const next=structuredClone(current),mapping=new Map();
+ function convert(src){
+  if(!src||typeof src.id!=='string'||typeof src.title!=='string'||typeof src.date!=='string'||!Array.isArray(src.stores))throw Error('Liste Lovable invalide.');
+  const l=newList(src.title,src.date);
+  for(const group of src.stores){
+   if(!group||typeof group.name!=='string'||typeof group.address!=='string'||!Array.isArray(group.items))throw Error('Magasin Lovable invalide.');
+   let st=next.stores.find(x=>x.name.trim().toLowerCase()===group.name.trim().toLowerCase()&&x.address.trim()===group.address.trim());
+   if(!st){st=newStore(group.name,group.address);next.stores.push(st);}
+   if(!l.storeIds.includes(st.id))l.storeIds.push(st.id);
+   for(const row of group.items){
+    if(!row||typeof row.name!=='string'||typeof row.quantity!=='string'||typeof row.purchased!=='boolean'||!currencies.includes(row.currency)||!(row.amount===null||(typeof row.amount==='number'&&Number.isFinite(row.amount)&&row.amount>=0)))throw Error('Article Lovable invalide.');
+    const minor=row.amount===null?null:Math.round(row.amount*100);
+    if(minor!==null&&(!Number.isSafeInteger(minor)||Math.abs(row.amount*100-minor)>0.000001))throw Error('Montant Lovable incompatible.');
+    l.items.push({...newItem(st.id,row.name,row.quantity,row.currency,minor),done:row.purchased});
+   }
+  }
+  mapping.set(src.id,l.id);return l;
+ }
+ for(const list of legacy.lists)next.lists.push(convert(list));
+ for(const entry of legacy.trash)next.trash.push(convert(entry.list));
+ if(!current.activeId)next.activeId=next.lists.find(x=>x.id===mapping.get(legacy.activeListId))?.id||next.lists[0]?.id||null;
+ return validate(next);
+}
