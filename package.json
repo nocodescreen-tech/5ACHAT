@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
-    "check": "node --check app.js && node --check core.js && node --check sw.js && node --check cloud.js && node --check scripts/build.mjs && node --check business.js && node --check scripts/brand-android.mjs && node --check extras.js && node --check ocr.js && node --check reminders.js",
+    "check": "node --check app.js && node --check core.js && node --check sw.js && node --check cloud.js && node --check scripts/build.mjs && node --check business.js && node --check scripts/brand-android.mjs && node --check extras.js && node --check ocr.js && node --check reminders.js && node --check backup.js",
     "build": "node scripts/build.mjs",
     "test:e2e": "playwright test"
   },
@@ -18,7 +18,9 @@
     "tesseract.js": "6.0.1",
     "tesseract.js-core": "6.0.0",
     "@capacitor/local-notifications": "7.0.0",
-    "@zxing/browser": "0.2.1"
+    "@zxing/browser": "0.2.1",
+    "@capacitor/filesystem": "7.0.0",
+    "@capacitor/share": "7.0.0"
   },
   "devDependencies": {
     "@capacitor/cli": "^7.0.0",
