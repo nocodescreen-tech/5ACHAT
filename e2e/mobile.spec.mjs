@@ -22,3 +22,24 @@ test('invoice, partial payment and remaining balance',async({page})=>{
  await expect(page.getByText(/Reste à payer/)).toBeVisible();await expect(page.getByText('Paiement',{exact:true})).toBeVisible();
  await page.screenshot({path:'e2e-results/mobile-factures.png',fullPage:true});
 });
+
+test('first-run permission flow and account entry',async({page})=>{
+ await page.addInitScript(()=>{
+  window.__reminderCalls=[];
+  window.Capacitor={isNativePlatform:()=>true,Plugins:{LocalNotifications:{
+   requestPermissions:async()=>{window.__reminderCalls.push('permission');return {display:'granted'};},
+   checkPermissions:async()=>({display:'granted'}),getPending:async()=>({notifications:[]}),
+   cancel:async()=>{},schedule:async()=>{}
+  }}};
+ });
+ await page.goto('http://127.0.0.1:8080');
+ await page.getByRole('button',{name:'Continuer',exact:true}).click();
+ await page.getByRole('button',{name:'Continuer',exact:true}).click();
+ await page.getByRole('button',{name:'Activer les rappels',exact:true}).click();
+ await expect(page.getByRole('button',{name:'Rappels activés',exact:true})).toBeDisabled();
+ expect(await page.evaluate(()=>window.__reminderCalls)).toEqual(['permission']);
+ await page.getByRole('button',{name:'Connecter mon compte',exact:true}).click();
+ await expect(page.getByLabel('Adresse e-mail',{exact:true})).toBeVisible();
+ await expect(page.getByRole('button',{name:'Désactiver rappels Android'})).toBeVisible();
+ await page.reload();await expect(page.locator('#welcome')).not.toBeVisible();
+});
