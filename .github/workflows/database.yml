@@ -29,4 +29,4 @@ jobs:
       PGDATABASE: achat_test
     steps:
       - uses: actions/checkout@v4
-      - run: psql -v ON_ERROR_STOP=1 -f tests/sql/bootstrap.sql -f supabase/migrations/001_initial.sql -f tests/sql/sync.sql
+      - run: psql -v ON_ERROR_STOP=1 -f tests/sql/bootstrap.sql -f supabase/migrations/001_initial.sql -f supabase/migrations/002_business_projection.sql -f tests/sql/sync.sql
