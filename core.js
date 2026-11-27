@@ -28,13 +28,13 @@ export function validate(s){
  if(!s.stores.every(x=>x&&str(x.id)&&str(x.name)&&str(x.address)&&str(x.phone))||!unique(s.stores))throw Error('Magasins invalides.');
  const storeIds=new Set(s.stores.map(x=>x.id));
  const validItem=i=>i&&str(i.id)&&str(i.name)&&str(i.qty)&&storeIds.has(i.storeId)&&currencies.includes(i.currency)&&money(i.amount)&&typeof i.done==='boolean';
- const validList=l=>l&&str(l.id)&&str(l.name)&&str(l.date)&&arr(l.items)&&unique(l.items)&&l.items.every(validItem)&&l.budget&&currencies.every(c=>money(l.budget[c]));
+ const validList=l=>l&&str(l.id)&&str(l.name)&&str(l.date)&&arr(l.items)&&unique(l.items)&&l.items.every(validItem)&&(l.storeIds===undefined||(arr(l.storeIds)&&new Set(l.storeIds).size===l.storeIds.length&&l.storeIds.every(id=>storeIds.has(id))))&&l.budget&&currencies.every(c=>money(l.budget[c]));
  if(!s.lists.every(validList)||!s.trash.every(validList)||!unique([...s.lists,...s.trash]))throw Error('Listes invalides.');
  if(s.activeId!==null&&!s.lists.some(l=>l.id===s.activeId))throw Error('Liste active invalide.');
  if(s.business!==undefined)validateBusiness(s.business);
  return s;
 }
-export function newList(name,date=today()){return {id:uid(),name,date,items:[],budget:{CDF:null,USD:null}};}
+export function newList(name,date=today()){return {id:uid(),name,date,items:[],storeIds:[],budget:{CDF:null,USD:null}};}
 export function newStore(name,address='',phone=''){return {id:uid(),name,address,phone};}
 export function newItem(storeId,name,qty,currency,amount=null){return {id:uid(),storeId,name,qty,currency,amount,done:false};}
 export function duplicateList(l){return {...structuredClone(l),id:uid(),name:l.name+' — copie',date:today(),items:l.items.map(i=>({...i,id:uid(),done:false}))};}
