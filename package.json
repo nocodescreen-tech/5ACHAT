@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
-    "check": "node --check app.js && node --check core.js && node --check sw.js && node --check cloud.js && node --check scripts/build.mjs && node --check business.js",
+    "check": "node --check app.js && node --check core.js && node --check sw.js && node --check cloud.js && node --check scripts/build.mjs && node --check business.js && node --check scripts/brand-android.mjs",
     "build": "node scripts/build.mjs"
   },
   "engines": {
