@@ -42,8 +42,9 @@ export function makeCloud({getState,replaceState,backup,notify}){
   }catch(e){status('Non synchronisé : '+e.message+' • copie locale conservée','warn');}
   finally{busy=false;refresh();if(rev!==null&&baseline!==fingerprint)schedule(false);else if(rev!==null&&canonical(getState())!==baseline)schedule(true);}
  }
- function schedule(auto=true){clearTimeout(timer);if(!auto||!session||rev===null)return;timer=setTimeout(()=>push(),1200);}
+ function schedule(auto=true){clearTimeout(timer);if(!auto||!session||rev===null)return;if(canonical(getState())===baseline)return;status(navigator.onLine===false?'Hors connexion • sauvegarde locale':'Modifications locales • synchronisation en attente','warn');if(navigator.onLine===false)return;timer=setTimeout(()=>push(),1200);}
  async function pull(){if(!session||busy)return;busy=true;try{remote=await read();if(!remote.state)throw Error('Aucune sauvegarde cloud.');if(!confirm('Restaurer cette version cloud ? Une copie de vos données locales sera exportée avant.'))return;backup();replaceState(remote.state);rev=remote.revision;baseline=canonical(getState());status('Restauré • révision '+rev,'ok');}catch(e){status(e.message,'warn');}finally{busy=false;refresh();}}
+ async function versions(){if(!session||busy)return;busy=true;refresh();try{const rows=await call('/rest/v1/workspace_versions?select=revision,created_at&order=revision.desc&limit=50',null,await token(),'GET');if(!rows.length)throw Error('Aucune version disponible.');const choice=prompt('Versions disponibles :\\n'+rows.map(x=>x.revision+' — '+new Date(x.created_at).toLocaleString('fr-FR')).join('\\n')+'\\nNuméro de la version à restaurer :');if(choice===null)return;const selected=rows.find(x=>String(x.revision)===choice.trim());if(!selected)throw Error('Version inconnue.');const result=await call('/rest/v1/workspace_versions?select=state&revision=eq.'+encodeURIComponent(selected.revision),null,await token(),'GET');if(!result[0])throw Error('Version indisponible.');const previous=validate(result[0].state);const latest=await read();if(!confirm('Restaurer la révision '+selected.revision+' sur cet appareil ? Le cloud actuel ne sera pas écrasé automatiquement.'))return;backup();rev=null;baseline=null;remote=latest;replaceState(previous);status('Ancienne version restaurée localement. Envoi cloud à confirmer.','warn');}catch(e){status(e.message,'warn');}finally{busy=false;refresh();}}
  function refresh(){const root=document.querySelector('#cloudPanel');if(root)mount(root);}
  function mount(root){
   root.replaceChildren();
@@ -59,7 +60,7 @@ export function makeCloud({getState,replaceState,backup,notify}){
    const actions=document.createElement('div');actions.className='cloud-actions';const btn=(text,fn,primary=false)=>{const b=document.createElement('button');b.textContent=text;b.disabled=busy;if(primary)b.className='primary';b.onclick=fn;actions.append(b);};
    if(rev===null){btn(remote?.state?'Remplacer le cloud par ma copie locale':'Envoyer ma copie locale',()=>{if(confirm('Confirmer l’envoi de la copie locale vers ce compte ?'))push(true);},true);if(remote?.state)btn('Restaurer la copie cloud',pull);}
    else{btn('Synchroniser maintenant',()=>push(),true);btn('Restaurer la dernière version cloud',pull);}
-   btn('Déconnexion',()=>{if(confirm('Déconnecter ? Les données restent sur cet appareil.')){++epoch;clearTimeout(timer);session=null;rev=null;remote=null;baseline=null;status('Non connecté');refresh();}});root.append(actions);
+   btn('Historique des sauvegardes',versions);btn('Déconnexion',()=>{if(confirm('Déconnecter ? Les données restent sur cet appareil.')){++epoch;clearTimeout(timer);session=null;rev=null;remote=null;baseline=null;status('Non connecté');refresh();}});root.append(actions);
   }
  }
  window.addEventListener('online',()=>schedule());return {mount,localChanged:schedule};
