@@ -60,3 +60,97 @@ dialog[open]{animation:sheet-in .2s ease-out}dialog::backdrop{background:#0007;b
 @media(max-width:650px){.top{padding:8px 13px;min-height:58px}main{padding:15px 12px calc(78px + env(safe-area-inset-bottom))}nav#nav{padding:5px 5px calc(5px + env(safe-area-inset-bottom));gap:0;backdrop-filter:none;background:var(--white)}.dark nav#nav{background:var(--white)}nav#nav button{min-height:54px;background:transparent;border:0;border-radius:0;font-size:10px;font-weight:500;gap:3px;padding:3px 0;color:var(--muted);box-shadow:none}nav#nav button.active{background:transparent;color:var(--green);font-weight:650}nav#nav button.active svg{background:color-mix(in srgb,var(--green),transparent 89%);border-radius:9px;box-sizing:content-box;padding:4px 10px;width:21px;height:21px}nav#nav button:not(.active) svg{width:21px;height:21px;padding:4px 10px;box-sizing:content-box}#modal{margin:auto 0 0;width:100%;max-width:none;max-height:90dvh;border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));background:var(--white)}#modal header h2{font-size:18px}}
 @media(prefers-reduced-motion:reduce){#view.tab-enter,dialog[open]{animation:none}*{transition:none!important}}
 @media print{.purchase-tools,.purchase-secondary,.header-add,.section-title button,.purchase-title button,.add-row,.subtle{display:none!important}.purchase-store .item-name{display:block!important;color:black!important}.purchase-store .item{grid-template-columns:35px 1fr auto}.purchase-summary{break-inside:avoid}}
+
+/* 5DEV refined palette: orange accent, warm whites, graphite text.
+   Keep solid high-contrast action colors separate from decorative orange. */
+:root{
+ --brand:#f97316;--brand-soft:#fff1e8;--brand-hover:#a83e08;--brand-pressed:#943605;--green:#b5470b;
+ --white:#fff;--surface-muted:#f7f7f8;--line:#e8e8eb;--muted:#646873;
+ --shadow-card:0 2px 5px #18181b05,0 5px 16px #18181b05;
+ --shadow-float:0 12px 32px #18181b12;
+ --radius-card:16px;--radius-control:11px;
+ background:#fcfcfd;color:#18181b;font-size:15px;
+}
+.dark{
+ --brand:#fb923c;--brand-soft:#38271f;--brand-hover:#ffb27b;--brand-pressed:#ffa36a;--green:#ffad75;
+ --white:#191c22;--surface-muted:#20242c;--line:#30353d;--muted:#aeb3bc;
+ --shadow-card:0 2px 5px #0002;--shadow-float:0 12px 32px #0005;
+ background:#101217;color:#f4f4f5;
+}
+body{background:inherit}button,input,textarea,select{border-radius:var(--radius-control);border-color:var(--line)}
+button{background:var(--white);color:inherit;font-weight:580}
+button:hover{background:var(--surface-muted)}
+button:active{transform:scale(.98)}
+.primary,.dark .primary{background:#b5470b;border-color:#b5470b;color:#fff}
+.primary:hover,.dark .primary:hover{background:#a83e08;border-color:#a83e08}
+.primary:active{background:#943605}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
+.top,.dark .top{background:var(--white);border-color:var(--line);backdrop-filter:none}
+.brand strong{font-weight:760;letter-spacing:-.04em}.logo,.logo img{width:36px;height:36px}
+.header-add,.dark .header-add{background:var(--brand-soft);color:var(--green);border:0;border-radius:12px;font-size:22px;width:40px;height:40px;min-height:40px}
+.top #save,.dark .top #save{color:var(--muted)}
+[data-tone=ok]{color:#347553!important}.dark [data-tone=ok]{color:#8bd3ab!important}
+[data-tone=warn]{color:#a94721!important}.dark [data-tone=warn]{color:#ffc298!important}
+.purchase-title{margin-bottom:14px}.purchase-title h1{font-size:24px;font-weight:740;line-height:1.2}
+.purchase-title small{font-size:11px;font-weight:550;color:var(--muted);letter-spacing:.025em}
+.purchase-summary{border-radius:var(--radius-card);padding:14px;box-shadow:var(--shadow-card);background:var(--white)}
+.progress-label{font-size:12px}.progress-label>strong{color:var(--green)}
+.purchase-summary progress{height:7px;margin:10px 0 14px}
+.purchase-summary progress::-webkit-progress-value{background:linear-gradient(90deg,#d65a0a,#fb923c)}
+.currency-summary{gap:10px}.currency-summary>div,.currency-summary>div+div{min-width:0;border:1px solid var(--line);border-radius:12px;padding:12px 10px;background:var(--surface-muted)}
+.currency-summary>div:first-child{background:linear-gradient(135deg,var(--white),var(--brand-soft))}
+.money-line{display:grid;gap:4px}.money-line small{font-size:11px;font-weight:550}.money-line strong{font-size:19px;font-weight:730;letter-spacing:-.045em;line-height:1.25}
+.money-detail{font-size:11px;gap:3px;margin-top:7px}
+.purchase-tools input,.dark .purchase-tools input{background:var(--white);border-color:var(--line);box-shadow:var(--shadow-card)}
+.filter-chips button,.dark .filter-chips button{border-color:transparent;background:transparent;color:var(--muted)}
+.filter-chips .selected,.dark .filter-chips .selected{background:var(--brand-soft);color:var(--green);border-color:transparent;font-weight:650}
+.filter-row>button{background:var(--white);box-shadow:var(--shadow-card)}
+.section-title h2{font-weight:720;font-size:18px}.section-title h2 small{padding:3px 7px;background:var(--surface-muted);border-radius:7px;color:var(--muted)}
+.section-title button,.dark .section-title button{background:transparent;border:0;color:var(--green);font-weight:650}
+.store,.empty,.stats article,.business-grid .store{border-radius:var(--radius-card);background:var(--white);border-color:var(--line);box-shadow:var(--shadow-card)}
+.purchase-store{margin:12px 0}
+.purchase-store header,.directory-row header{padding:13px 12px;background:var(--white)}
+.store-icon,.empty-icon,.dark .store-icon,.dark .empty-icon{background:var(--brand-soft);color:var(--green);width:38px;height:38px;border-radius:12px}
+.purchase-store h3,.directory-row h3{font-size:16px;font-weight:700;letter-spacing:-.02em}
+.store-subtotal{padding:0 12px 9px 60px;gap:6px}.store-subtotal span{background:var(--brand-soft);border-radius:7px;padding:3px 7px;font-size:11px;color:var(--green)}
+.purchase-store .item{padding:7px 9px;min-height:61px}
+.purchase-store .item .item-name,.dark .purchase-store .item .item-name{background:transparent;border:0;color:inherit}
+.purchase-store .item button.price-edit,.dark .purchase-store .item button.price-edit{background:var(--brand-soft);color:var(--green);border:0;font-weight:660;border-radius:9px}
+.purchase-store .item button[data-action=deleteItem],.dark .purchase-store .item button[data-action=deleteItem]{background:transparent;border:0}
+.item input[type=checkbox]:before{border-color:var(--muted);background:var(--white);transition:background .16s,border-color .16s,transform .16s}
+.item input[type=checkbox]:checked:before,.dark .item input[type=checkbox]:checked:before{background:#b5470b;border-color:#b5470b}
+.purchase-store .item.done{background:var(--surface-muted)}.purchase-store .item.done .item-name{opacity:.78}
+.purchase-store footer,.dark .purchase-store footer{background:var(--white);color:var(--green)}
+.purchase-store footer .add-row,.dark .purchase-store footer .add-row{background:transparent;border:0;font-weight:650;color:var(--green)}
+.subtle,.dark .subtle{background:transparent;border:0;color:var(--muted)}
+.purchase-secondary button{border-radius:11px}
+.listhead{margin:6px 0 15px;gap:8px}.listhead h2{font-size:23px;font-weight:740}
+.segment{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:4px;padding:4px;background:var(--surface-muted);border-radius:13px;border:1px solid var(--line);margin:12px 0 16px}
+.segment::-webkit-scrollbar{display:none}
+.segment button,.dark .segment button{flex:0 0 auto;min-height:38px;white-space:nowrap;border:0;background:transparent;color:var(--muted);padding:8px 11px;border-radius:9px;font-size:12px}
+.segment .active,.dark .segment .active{background:var(--white);color:var(--green);box-shadow:var(--shadow-card);font-weight:700}
+.business-grid{gap:10px}.business-grid .store{padding:14px;background:var(--white)}.business-grid .store:first-child{background:linear-gradient(145deg,var(--white),var(--brand-soft))}
+.business-grid h2{font-size:22px;line-height:1.15;margin:7px 0 15px}.business-grid h3{font-size:16px;margin:5px 0 12px}.business-grid small{font-size:11px}
+.business-row{padding:13px 12px;border-color:var(--line)}.business-row button{min-height:40px;padding:6px 10px}
+.business-row .money{color:var(--green)}
+.settings{padding:17px}.settings p{font-size:13px;line-height:1.6}
+.settings .setting-group{border-top:1px solid var(--line);padding:13px 0 0;margin-top:12px}
+.settings .setting-group h3{font-size:14px}
+.settings .setting-actions{display:grid;grid-template-columns:1fr;gap:7px}
+.settings .setting-actions button{width:100%;text-align:left;margin:0;padding:12px;min-height:46px}
+.cloud-form input,.dark .cloud-form input,#fields input,#fields select,#fields textarea,.dark #fields input,.dark #fields select,.dark #fields textarea{background:var(--surface-muted);color:inherit;border-color:var(--line)}
+dialog,.dark dialog{background:var(--white);border-color:var(--line);box-shadow:var(--shadow-float)}
+#modal header h2{font-size:19px;font-weight:720}
+#welcome,.dark #welcome{background:var(--white);border-radius:20px}
+.welcome-visual,.dark .welcome-visual{background:var(--brand-soft);color:var(--green);min-height:124px;border-radius:17px}
+.welcome-content h2{font-size:26px;font-weight:740}.welcome-kicker{color:var(--green)}.welcome-dots .active{background:var(--brand)}
+@media(max-width:650px){
+ main{padding:15px 14px calc(82px + env(safe-area-inset-bottom))}
+ nav#nav,.dark nav#nav{background:var(--white);border-color:var(--line);box-shadow:0 -2px 12px #00000006}
+ nav#nav button.active{color:var(--green)}
+ nav#nav button.active svg{background:var(--brand-soft);border-radius:10px}
+ .business-grid h2{font-size:18px}.money-line strong{font-size:17px}
+}
+@media(max-width:360px){main{padding-left:10px;padding-right:10px}.filter-chips button{padding:6px 8px}.currency-summary>div,.currency-summary>div+div{padding:10px 8px}.money-line strong{font-size:16px}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:0s!important;transition:none!important}}
+@media print{.store,.purchase-summary,.business-grid .store{box-shadow:none;background:white!important;color:black!important}.currency-summary>div{background:white!important}}
