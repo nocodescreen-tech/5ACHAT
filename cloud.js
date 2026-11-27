@@ -4,7 +4,7 @@ import {validate} from './core.js';
 const key='5achat:cloud-config:v1';
 const canonical=x=>x===null||typeof x!=='object'?JSON.stringify(x):Array.isArray(x)?'['+x.map(canonical).join(',')+']':'{'+Object.keys(x).sort().map(k=>JSON.stringify(k)+':'+canonical(x[k])).join(',')+'}';
 export function makeCloud({getState,replaceState,backup,notify}){
- let cfg={url:'',key:''};try{cfg={...cfg,...JSON.parse(localStorage.getItem(key)||'{}')};}catch{}
+ let cfg={url:'https://koqzbekswlegyljlmvot.supabase.co',key:"sb_publishable_bf049xJMXBgOD2FnWbl2Kw_zk9Ujo-r"};try{cfg={...cfg,...JSON.parse(localStorage.getItem(key)||'{}')};}catch{}
  let session=null,rev=null,baseline=null,remote=null,busy=false,timer=null,epoch=0,message='Non connecté',tone='neutral';
  function status(text,kind='neutral'){message=text;tone=kind;const e=document.querySelector('#cloudStatus');if(e){e.textContent=text;e.dataset.tone=kind;}notify?.(text,kind);}
  function validConfig(url,publicKey){const u=new URL(url);if(u.protocol!=='https:'||!u.hostname.endsWith('.supabase.co')||u.pathname!=='/'||u.search||u.hash||u.username||u.password)throw Error('Utilisez l’URL HTTPS de votre projet Supabase.');if(!publicKey||publicKey.startsWith('sb_secret_'))throw Error('Utilisez la clé publique publishable ou anon, jamais la clé service_role.');if(publicKey.split('.').length===3){try{const role=JSON.parse(atob(publicKey.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).role;if(role!=='anon')throw Error('Clé non publique');}catch{throw Error('Utilisez uniquement une clé anon publique.');}}return {url:u.origin,key:publicKey};}
