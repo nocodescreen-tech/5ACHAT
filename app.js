@@ -2,6 +2,7 @@ import {load,persist,emptyState,newList,newStore,newItem,duplicateList,total,for
 import {makeCloud} from './cloud.js';
 import {spreadsheetRows,purchaseRows,dueReminders,decodeBarcode} from './extras.js';
 import {recognizeReceipt} from './ocr.js';
+import {configureReminders,remindersEnabled,syncReminders} from './reminders.js';
 import {businessUI,emptyBusiness} from './business.js';
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -14,7 +15,7 @@ const store=id=>state.stores.find(s=>s.id===id);
 function change(fn,{restore=false}={}){
  if(locked&&!restore)throw Error('Restaurez une sauvegarde avant de modifier.');
  const next=structuredClone(state);fn(next);validate(next);try{persist(localStorage,next);}catch(e){$('#save').textContent='Échec de sauvegarde';throw Error('Écriture impossible. Les modifications ne sont pas enregistrées.');}
- state=next;locked=false;$('#save').textContent='Enregistré • '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});warn('');render();cloud.localChanged();
+ state=next;locked=false;$('#save').textContent='Enregistré • '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});warn('');render();cloud.localChanged();syncReminders(state).catch(e=>console.warn('Rappels:',e.message));
 }
 function run(fn){try{fn();}catch(e){warn(e.message);}}
 const inp=(name,label,value='',type='text',extra='')=>'<label>'+esc(label)+'<input name="'+name+'" type="'+type+'" value="'+esc(value)+'" '+extra+'></label>';
@@ -38,7 +39,7 @@ const due=dueReminders(state,today());if(tab==='purchases'&&due.length)html='<di
 if(tab==='business')html=business.view();
 if(tab==='stores')html='<div class="listhead"><h2>Fournisseurs</h2>'+btn('newStore','+ Ajouter','','primary')+'</div>'+state.stores.map(s=>'<article class="store"><header><div><h3>'+esc(s.name)+'</h3><small>'+esc(s.address||'Adresse non renseignée')+' · '+esc(s.phone||'Sans téléphone')+'</small></div>'+btn('editStore','Modifier',s.id)+btn('deleteStore','Supprimer',s.id,'danger')+'</header></article>').join('');
 if(tab==='history')html='<div class="listhead"><h2>Historique des listes</h2>'+btn('newList','+ Nouvelle liste','','primary')+'</div>'+state.lists.map(l=>'<article class="store"><header><div><h3>'+esc(l.name)+'</h3><small>'+esc(l.date)+' · '+l.items.length+' articles</small></div>'+btn('openList','Ouvrir',l.id)+btn('duplicate','Dupliquer',l.id)+btn('archive','Corbeille',l.id)+'</header></article>').join('')+'<h3>Corbeille</h3>'+state.trash.map(l=>'<article class="store"><header><strong>'+esc(l.name)+'</strong>'+btn('restoreList','Restaurer',l.id)+'</header></article>').join('');
-if(tab==='settings')html='<div class="theme-toggle">'+btn('theme',document.documentElement.classList.contains('dark')?'Mode clair':'Mode sombre')+'</div><article class="store settings"><h2>Protection de vos données</h2><p>Les modifications sont enregistrées automatiquement dans ce navigateur. Exportez une copie régulière : la suppression des données du navigateur ou la perte du téléphone peut les effacer.</p>'+btn('export','Exporter la sauvegarde JSON','','primary')+btn('restore','Importer une sauvegarde JSON')+btn('csv','Exporter la liste en CSV')+'<p>Sauvegarde cloud facultative : configurez votre projet ci-dessous.</p></article><article class="store settings" id="cloudPanel"></article>';
+if(tab==='settings')html='<div class="theme-toggle">' +btn('theme',document.documentElement.classList.contains('dark')?'Mode clair':'Mode sombre')+btn('reminders',remindersEnabled()?'Désactiver rappels Android':'Activer rappels Android')+'</div><article class="store settings"><h2>Protection de vos données</h2><p>Les modifications sont enregistrées automatiquement dans ce navigateur. Exportez une copie régulière : la suppression des données du navigateur ou la perte du téléphone peut les effacer.</p>'+btn('export','Exporter la sauvegarde JSON','','primary')+btn('restore','Importer une sauvegarde JSON')+btn('csv','Exporter la liste en CSV')+'<p>Sauvegarde cloud facultative : configurez votre projet ci-dessous.</p></article><article class="store settings" id="cloudPanel"></article>';
 $('#view').innerHTML=html;if($('#cloudPanel'))cloud.mount($('#cloudPanel'));if($('#filter'))$('#filter').value=filter;}
 function download(name,content,type){const url=URL.createObjectURL(new Blob([content],{type}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 function share(){const l=active();if(!l)return;const t=l.name+' — '+l.date+'\n'+l.items.map(i=>(i.done?'☑':'☐')+' '+i.qty+' '+i.name+' | '+store(i.storeId)?.name+' | '+(i.amount==null?'Prix inconnu':format(i.amount,i.currency))).join('\n');if(navigator.share)navigator.share({text:t}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>alert('Liste copiée')).catch(()=>prompt('Copiez la liste',t));else prompt('Copiez la liste',t);}
@@ -50,6 +51,7 @@ $('#view').onclick=e=>{const b=e.target.closest('button[data-action]');if(!b)ret
 if(a.startsWith('biz:'))return business.handle(a.slice(4),id);
 switch(a){
 case 'theme':{const dark=document.documentElement.classList.toggle('dark');try{localStorage.setItem('5achat:theme',dark?'dark':'light');}catch{}render();return;}
+case 'reminders':return configureReminders(!remindersEnabled(),state).then(()=>render()).catch(e=>warn(e.message));
 case 'print':return window.print();
 case 'due':tab='business';business.handle('tab','invoices');return;
 case 'spreadsheet':if(!l)throw Error('Créez une liste avant l’import');return $('#spreadsheetFile').click();
@@ -69,5 +71,5 @@ $('#fields').addEventListener('change',async e=>{if(e.target.id==='receiptPhoto'
 $('#importFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const data=validate(JSON.parse(await f.text()));if(confirm('Remplacer les données actuelles par cette sauvegarde ?')){if(!locked)download('5achat-avant-restauration.json',JSON.stringify(state,null,2),'application/json');change(s=>Object.assign(s,{business:emptyBusiness()},data),{restore:true});}}catch(err){warn(err.message);}finally{e.target.value='';}};
 window.addEventListener('storage',e=>{if(e.key==='5achat:v1'){try{state=load(localStorage).state;render();$('#save').textContent='Mis à jour depuis un autre onglet';}catch(err){warn(err.message);}}});
 try{document.documentElement.classList.toggle('dark',localStorage.getItem('5achat:theme')==='dark');}catch{}
-render();cloud.resume();
+render();cloud.resume();if(remindersEnabled())syncReminders(state).catch(e=>console.warn('Rappels:',e.message));
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
