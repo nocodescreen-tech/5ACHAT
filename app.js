@@ -62,5 +62,5 @@ case 'importText':return dialog('Importer une liste texte','<label>Collez votre 
 $('#importFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const data=validate(JSON.parse(await f.text()));if(confirm('Remplacer les données actuelles par cette sauvegarde ?')){if(!locked)download('5achat-avant-restauration.json',JSON.stringify(state,null,2),'application/json');change(s=>Object.assign(s,{business:emptyBusiness()},data),{restore:true});}}catch(err){warn(err.message);}finally{e.target.value='';}};
 window.addEventListener('storage',e=>{if(e.key==='5achat:v1'){try{state=load(localStorage).state;render();$('#save').textContent='Mis à jour depuis un autre onglet';}catch(err){warn(err.message);}}});
 try{document.documentElement.classList.toggle('dark',localStorage.getItem('5achat:theme')==='dark');}catch{}
-render();
+render();cloud.resume();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
