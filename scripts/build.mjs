@@ -1,8 +1,11 @@
-import {mkdir,copyFile,writeFile} from 'node:fs/promises';
+import {mkdir,copyFile,writeFile,readdir} from 'node:fs/promises';
 import {deflateSync} from 'node:zlib';
-const files=['index.html','style.css','app.js','core.js','cloud.js','business.js','extras.js','manifest.webmanifest','icon.svg','sw.js'];
+const files=['index.html','style.css','app.js','core.js','cloud.js','business.js','extras.js','ocr.js','manifest.webmanifest','icon.svg','sw.js'];
 await mkdir('www',{recursive:true});
 for(const f of files)await copyFile(f,'www/'+f);
+await mkdir('www/vendor/tesseract/core',{recursive:true});
+for(const f of ['tesseract.min.js','worker.min.js'])await copyFile('node_modules/tesseract.js/dist/'+f,'www/vendor/tesseract/'+f);
+for(const f of await readdir('node_modules/tesseract.js-core'))if(/^tesseract-core.*\.wasm(?:\.js)?$/.test(f))await copyFile('node_modules/tesseract.js-core/'+f,'www/vendor/tesseract/core/'+f);
 // Branded PNG icons generated locally, no external assets.
 function crc32(buf){let crc=0xffffffff;for(const b of buf){crc^=b;for(let j=0;j<8;j++)crc=(crc>>>1)^((crc&1)?0xedb88320:0);}return (crc^0xffffffff)>>>0;}
 function chunk(tag,data){const name=Buffer.from(tag),l=Buffer.alloc(4),crc=Buffer.alloc(4);l.writeUInt32BE(data.length);crc.writeUInt32BE(crc32(Buffer.concat([name,data])));return Buffer.concat([l,name,data,crc]);}
